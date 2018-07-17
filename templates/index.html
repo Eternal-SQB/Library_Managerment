@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="https://cdn.bootcss.com/sweetalert/1.1.3/sweetalert.css" rel="stylesheet">
+    <style>
+        #aa {
+            line-height: 38px;
+        }
+
+        .aa {
+            line-height: 50px;
+        }
+
+        .aa a {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">图书管理系统</a>
+
+
+        </div>
+        <div class="pull-right aa">
+            <a>Hi!{{ username }}</a>
+            <a>上次登录时间:{{ login_time }}</a>
+            <a href="/login/" type="submit" class="btn btn-default ">登录</a>
+
+            <a href="/logout/" type="submit" class="btn btn-default ">注销</a>
+        </div>
+    </div>
+
+
+</nav>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+
+            <div class="panel panel-default">
+                <div class="panel-heading">书籍信息
+                    <a href="/add/" id="aa">
+                        <button type="button" class="btn btn-default pull-right">添加书籍</button>
+                    </a>
+
+                </div>
+
+
+                <table class="table table-hover">
+                    <thead>
+                    <tr>
+                        <th>编号</th>
+                        <th>书名</th>
+                        <th>价格</th>
+                        <th>出版社</th>
+                        <th>出版时间</th>
+                        <th>作者</th>
+                        <th>编辑</th>
+                        <th>删除</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for foo in book_list %}
+
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ foo.title }}</td>
+                            <td>{{ foo.prices }}</td>
+                            <td>{{ foo.publish.name }}</td>
+                            <td>{{ foo.pub_date|date:'Y-m-d' }}</td>
+                            <td>
+                                {% for ff in foo.authors.all %}
+                                    {% if not forloop.last %}
+                                        {{ ff.name }},&nbsp
+                                    {% else %}
+                                        {{ ff.name }}
+                                    {% endif %}
+
+                                {% endfor %}
+                            <td>
+                                <a href="edit/{{ foo.id }}">
+                                    <button type="button" class="btn btn-success">编辑</button>
+                                </a>
+                            </td>
+                            <td>
+                                <a edit_id="{{ foo.id }}" class="btn btn-danger ss">
+                                    删除
+                                </a>
+                            </td>
+                        </tr>
+
+
+                    {% endfor %}
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+</div>
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/sweetalert/1.1.3/sweetalert-dev.js"></script>
+{% csrf_token %}
+<script>
+    $('.ss').click(function () {
+        _this = $(this);
+        swal({
+                title: "确定删除吗？",
+                text: "你将无法恢复该虚拟文件！",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "确定删除！",
+                cancelButtonText: "取消删除！",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+                    swal("删除！", "你的虚拟文件已经被删除。",
+                        "success");
+                    $.ajax({
+                        url:{% url 'del_book' %},
+                        type: 'post',
+                        data: {
+                            del_id: _this.attr('edit_id'),
+                            csrfmiddlewaretoken: $("[name='csrfmiddlewaretoken']").val()
+                        },
+                        success: function (data) {
+                            var data = JSON.parse(data);
+
+                            if (data.status) {
+                                _this.parent().parent().remove()
+                            }
+                        }
+                    });
+                } else {
+                    swal("取消！", "你的虚拟文件是安全的:)",
+                        "error");
+                }
+            });
+
+
+    })
+</script>
+</body>
+
+</html>
